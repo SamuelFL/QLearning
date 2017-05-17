@@ -89,7 +89,7 @@ Rewards[9 * width + 1] = -10000
 Rewards[3 * width + 3] = 100
 final_state = getState(3, 3)
 
-print(np.reshape(Rewards, (height, width)))
+#print(np.reshape(Rewards, (height, width)))
 
 
 def qlearning(s1, a, s2):
@@ -98,22 +98,72 @@ def qlearning(s1, a, s2):
 
 
 # Episodes
-actionCounter = 0
-episodes = 100
-for i in range(episodes):
-    state = getRndState()
-    while state != final_state:
-        epsilon = 0.7
-        #action = getRndAction(state)            #El numero promedio de acciones varia entre 190 y 230
-        #action = getActionGreedy(state)         #El numero promedio de acciones varia entre 15 y 130
-        action = getActionEGreedy(state,epsilon)#El numero promedio de acciones varia entre 15 y 22
-        y = getStateCoord(state)[0] + actions_vectors[action][0]
-        x = getStateCoord(state)[1] + actions_vectors[action][1]
-        new_state = getState(y, x)
-        qlearning(state, actions_list[action], new_state)
-        state = new_state
-        actionCounter += 1
-print("Número promedio de acciones",actionCounter/episodes)
+
+def randomQLearning(episodes,dataArray):
+    actionCounterRandom = 0
+    for i in range(episodes):
+        state = getRndState()
+        while state != final_state:
+            action = getRndAction(state)            #El numero promedio de acciones varia entre 190 y 230
+            y = getStateCoord(state)[0] + actions_vectors[action][0]
+            x = getStateCoord(state)[1] + actions_vectors[action][1]
+            new_state = getState(y, x)
+            qlearning(state, actions_list[action], new_state)
+            state = new_state
+            actionCounterRandom += 1
+    dataArray.append(actionCounterRandom/episodes)
+    return actionCounterRandom
+
+def greedyQLearning(episodes,dataArray):
+    actionCounterGreedy = 0
+    for i in range(episodes):
+        state = getRndState()
+        while state != final_state:
+            action = getActionGreedy(state)         #El numero promedio de acciones varia entre 15 y 130
+            y = getStateCoord(state)[0] + actions_vectors[action][0]
+            x = getStateCoord(state)[1] + actions_vectors[action][1]
+            new_state = getState(y, x)
+            qlearning(state, actions_list[action], new_state)
+            state = new_state
+            actionCounterGreedy += 1
+    dataArray.append(actionCounterGreedy/episodes)
+    return actionCounterGreedy
+
+def eGreedyQLearning(episodes, epsilon, dataArray):
+    actionCounterEGreedy = 0
+    for i in range(episodes):
+        state = getRndState()
+        while state != final_state:
+            #epsilon = 0.7
+            action = getActionEGreedy(state,epsilon)#El numero promedio de acciones varia entre 15 y 22
+            y = getStateCoord(state)[0] + actions_vectors[action][0]
+            x = getStateCoord(state)[1] + actions_vectors[action][1]
+            new_state = getState(y, x)
+            qlearning(state, actions_list[action], new_state)
+            state = new_state
+            actionCounterEGreedy += 1
+    dataArray.append(actionCounterEGreedy/episodes)
+    return actionCounterEGreedy
+epsilon = 0.7
+episodesData = []
+randomCountData = []
+greedyCountData = []
+eGreedyCountData = []
+for ep in range(10,160,10):
+    print(ep,"episodios->")
+    episodesData.append(ep)
+    print("Número promedio de acciones con exploración 100%:",randomQLearning(ep,randomCountData)/ep)
+    print("Número promedio de acciones con explotación 100%:",greedyQLearning(ep,greedyCountData)/ep)
+    print("Número promedio de acciones con exploración epsilon = ",epsilon*100,"%:",eGreedyQLearning(ep,epsilon,eGreedyCountData)/ep)
+
+infoEpsilon ='Exploración epsilon =',epsilon*100,'%'
+plt.plot(episodesData, randomCountData, label="Exploración 100%")
+plt.plot(episodesData, greedyCountData, label="Explotación 100%")
+plt.plot(episodesData, eGreedyCountData, label=infoEpsilon)
+plt.legend()
+plt.show()
+
+
 #print(Q)
 
 
@@ -145,3 +195,4 @@ for j in range(height):
     plt.plot([0, width], [j+1, j+1], 'b')
 
 #plt.show()
+
